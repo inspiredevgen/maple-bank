@@ -1,0 +1,65 @@
+name: CI
+
+# Runs on EVERY push (any branch) and on every pull request,
+# so each `git push` and each merge shows up in the Actions tab.
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Show what is being built
+        run: |
+          echo "Branch : ${GITHUB_REF_NAME}"
+          echo "Commit : ${GITHUB_SHA}"
+          echo "Author : ${{ github.actor }}"
+          git log -1 --format='Message: %s'
+
+      - name: Compile (catches syntax errors and leftover conflict markers)
+        run: |
+          if grep -rnE '^(<<<<<<<|=======|>>>>>>>)( |$)' --include='*.py' .; then
+            echo "::error::Conflict markers found - finish resolving the merge!"
+            exit 1
+          fi
+          python -m compileall -q maplebank main.py
+
+      - name: Run the demo
+        run: python main.py | tee demo-output.txt
+
+      - name: Upload the build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: maple-bank-build-${{ github.run_number }}
+          path: |
+            maplebank/
+            main.py
+            demo-output.txt
+
+  tests:
+    name: Tests
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # The starting code is buggy on purpose, so failing tests are expected.
+      # The progress table on the run's Summary page shows which exercises are fixed.
+      # Instructor: delete `continue-on-error` to make red tests fail the whole run.
+      - name: Run tests and publish progress
+        continue-on-error: true
+        run: python tools/test_report.py
