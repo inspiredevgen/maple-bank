@@ -3,7 +3,8 @@ from maplebank import config
 
 
 def format_money(amount):
-    return f"{amount} {config.CURRENCY}"
+    sign = "-" if amount < 0 else ""
+    return f"{sign}${abs(amount):,.2f} {config.CURRENCY}"
 
 
 def statement(account):
