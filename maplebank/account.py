@@ -14,6 +14,8 @@ class Account:
         self.transactions = []
 
     def deposit(self, amount):
+        if amount <= 0:
+            raise ValueError("Deposit amount must be positive not null")
         self.balance += amount
         self._record("deposit", amount)
 
