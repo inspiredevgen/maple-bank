@@ -22,8 +22,13 @@ class Account:
     def withdraw(self, amount):
         if amount <= 0:
             raise ValueError("Withdrawal amount must be positive")
+        total = amount + config.WITHDRAWAL_FEE
+        if self.balance - total < -config.OVERDRAFT_LIMIT:
+            raise InsufficientFunds("Withdrawal exceeds overdraft limit")
         self.balance -= amount
         self._record("withdrawal", amount)
+        self.balance -= config.WITHDRAWAL_FEE
+        self._record("fee", config.WITHDRAWAL_FEE)
 
     def _record(self, kind, amount):
         self.transactions.append((kind, amount, self.balance))

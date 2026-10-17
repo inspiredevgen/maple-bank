@@ -10,11 +10,12 @@ class Bank:
         self._next_number = 1001
 
     def open_account(self, owner, initial_deposit=0.0):
-        number = f"MB-{self._next_number}"
+        number = f"MB-{self._next_number:06d}"
         account = Account(number, owner)
         if initial_deposit:
             account.deposit(initial_deposit)
         self.accounts[number] = account
+        self._next_number += 1
         return account
 
     def find(self, number):
@@ -25,5 +26,5 @@ class Bank:
     def transfer(self, from_number, to_number, amount):
         source = self.find(from_number)
         target = self.find(to_number)
-        target.withdraw(amount)
-        source.deposit(amount)
+        source.withdraw(amount)
+        target.deposit(amount)

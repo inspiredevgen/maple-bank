@@ -3,8 +3,7 @@ from maplebank import config
 
 
 def monthly_interest(account):
-    interest = account.balance * config.ANNUAL_INTEREST_RATE
-    return interest
+    return round(account.balance * config.ANNUAL_INTEREST_RATE / 12, 2)
 
 
 def apply_monthly_interest(account):
